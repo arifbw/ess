@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ess-web:
+    build: .
+    container_name: ess_app
+    ports:
+      - "7071:80"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - mysql
+
+networks:
+  mysql:
+    external: true

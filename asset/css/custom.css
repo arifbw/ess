@@ -1,0 +1,136 @@
+.nav-top-profile{
+	padding-right:3px;
+	padding-left:3px;
+	bottom:0;
+}
+
+.nav-top-profile:hover{
+	background-color:#EEEEEE;
+}
+
+td ul{
+	padding-left:10px;
+}
+
+#switch_user{
+	text-align:center;
+	position:fixed;
+	display:block;
+	right:30px;
+	top:60px;
+}
+
+#daftar_pengadministrasi_unit_kerja .alert, #pilih_unit_kerja_cetak_gaji .alert, #pilih_kontrak_kerja_cetak_gaji .alert{
+	padding:3px;
+	margin-right:3px;
+	margin-bottom:3px;
+	display:inline-block;
+}
+
+#daftar_pengadministrasi_pilih_karyawan, #pilih_karyawan_cetak_gaji{
+	max-height:100px;
+	overflow:auto;
+	margin-bottom:10px;
+}
+
+#daftar_pengadministrasi_pilih_karyawan .alert:hover, #pilih_karyawan_cetak_gaji .alert:hover{
+	font-weight:bold;
+}
+
+#footer{
+	margin-top:6px;
+	text-align:center;
+	background-color:#C0C0C0;
+	padding:4px;
+	font-weight:bold;
+}
+
+.footer_login{
+	bottom:0px;
+	position:fixed;
+	width:100%;
+	margin-top:0px;
+}
+
+.lost_password, .kembali_ke_portal{
+	margin-top:5px;
+}
+
+.kembali_ke_portal{
+	float:left;
+}
+
+.lost_password{
+	float:right;
+}
+
+.frame{
+	background-color:#EEEEEE;
+	padding:10px;
+	margin:5px;
+	overflow:auto;
+	display:block;
+	text-align:center;
+	border-radius:10px;
+}
+
+.frame:hover{
+	background-color:#CCCCCC;
+}
+
+.frame_button{
+	overflow:auto;
+	display:none;
+	text-align:right;
+}
+
+.frame:hover .frame_button{
+	display:block;
+}
+
+#judul_hasil_cari_menu li{
+	background-color:#E0E0E0;
+	padding-left:20px;
+	padding-top:5px;
+	padding-bottom:5px;
+}
+
+#hasil_cari_menu{
+	max-height:120px;
+	background-color:#FAFAFA;
+	overflow-y:auto;
+}
+
+#hasil_cari_menu:hover{
+	max-height:120px;
+	background-color:#E9E9E9;
+	overflow-y:auto;
+}
+
+#hasil_cari_menu ul{
+	list-style-type: none;
+	margin:0;
+	padding:0;
+	position:relative;
+	display:block;
+}
+
+#hasil_cari_menu ul li{
+	position:relative;
+	display:block;
+}
+
+#hasil_cari_menu a{
+	position:relative;
+	display:block;
+	padding-left:20px;
+	padding-right:5px;
+	padding-top:5px;
+	padding-bottom:5px;
+	border-radius:5px;
+}
+
+#hasil_cari_menu a:hover{
+	text-decoration:none;
+	background-color:#CCCCCC;
+}

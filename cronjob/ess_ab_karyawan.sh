@@ -1,0 +1,1 @@
+php /var/www/html/ess/index.php ab_karyawan cico_tables_to_ab

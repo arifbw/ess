@@ -1,0 +1,132 @@
+			<link href="<?php echo base_url('asset/select2')?>/select2.min.css" rel="stylesheet" />
+        	<link href="<?= base_url('asset/bootstrap-datetimepicker-master/build/css/bootstrap-datetimepicker.min.css')?>" rel="stylesheet" />
+
+			<form role="form" action="<?php echo base_url(); ?>pelaporan/persetujuan/pendidikan/save_approve/" id="formulir_tambah" method="post">	
+				<div class="row">
+					<div class="col-md-10">
+						<table>
+							<tr>
+								<th>Pegawai</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['np_karyawan'].' - '.$detail['nama_karyawan'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Unit Kerja</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['nama_unit'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Nomor Ijazah</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['no_ijazah'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Nomor Transkrip</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['no_transkrip'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Nama PT</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['perguruan_tinggi'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Fakultas</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['fakultas'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Jurusan</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['jenjang'].' '.$detail['jurusan'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Akreditasi</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['akreditasi'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Tanggal Masuk Pendidikan</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['tgl_masuk'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Tanggal Selesai Pendidikan</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['tgl_selesai'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Keterangan</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['keterangan'] ?></a></b></td>
+							</tr>
+							<tr>
+								<th>Dibuat Tanggal</th>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+								<td><b><a><?= $detail['created_at'] ?></a></b></td>
+							</tr>
+							<tr>
+								<td style="padding-top:20px" colspan="3"><b><a class="btn btn-primary" target="_blank" href="<?= base_url('uploads/pelaporan/pendidikan/ijazah/'.$detail['file_ijazah']) ?>">Unduh File Ijazah</a> <b><a class="btn btn-primary" target="_blank" href="<?= base_url('uploads/pelaporan/pendidikan/transkrip/'.$detail['file_transkrip']) ?>">Unduh File Transkrip</a></b></b></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+
+				<br>
+
+				<div class="alert alert-<?= $approval_warna ?>">
+					<strong><a class="text-<?= $approval_warna ?>"><?= $detail['approval_np'].' | '.$detail['approval_nama'] ?></a></strong><br>
+					<?php if (($detail['approval_status']=='0' || $detail['approval_status']==null) && $detail['approval_np']==$_SESSION["no_pokok"]) { ?>
+						<br>
+						<select class="form-control select2" name='status_approval' onchange="form_alasan(this)" style="width : 100%" required>
+							<option value=''>Berikan Persetujuan</option>
+							<option value='1' <?= ($detail['approval_status']=='1') ? 'selected' : ''; ?>>Setuju</option>
+							<option value='2' <?= ($detail['approval_status']=='2') ? 'selected' : ''; ?>>Tidak Setuju</option>
+						</select>
+
+						<div id="form-alasan" style="display: <?= ($detail['approval_status']=='2') ? '':'none' ?>;">
+							<b>Alasan Tidak Disetujui</b>
+							<br>
+							<textarea rows="2" class="form-control" name='alasan'><?= $detail['approval_alasan'] ?></textarea>
+						</div>
+					<?php } else { ?>
+						<p><?= $approval_status ?></p>
+						<?php if ($detail['approval_status']=='2') { ?>
+						<p style="margin-top: 0">Alasan : <?= $detail['approval_alasan'] ?></p>
+						<?php } ?>
+					<?php } ?>
+
+					<?php if ($detail['approval_status']=='1' || $detail['approval_status']=='2') { ?>
+					<a class="text-<?= $approval_warna ?>"><?= 'Tanggal Persetujuan : '.$detail['approval_date'] ?></a><br>
+					<?php } ?>
+				</div>
+
+				<?php if (($detail['approval_status']=='0' || $detail['approval_status']==null) && $detail['approval_np']==$_SESSION["no_pokok"]) { ?>
+				<div class="row">
+					<div class="col-lg-12 text-right">
+						<input type="hidden" name="id_" value="<?= $detail['id'] ?>">
+						<input type="submit" name="submit" id='persetujuan_button' value="Simpan" class="btn btn-block btn-<?= $approval_warna ?>">
+					</div>
+				</div>
+				<?php } ?>
+			</form>
+
+
+			<script type="text/javascript">
+			function form_alasan(obj){
+                var textarea = document.getElementById("form-alasan");
+                var selectBox = obj;
+                var selected = selectBox.options[selectBox.selectedIndex].value;
+
+                if(selected === '2'){
+                    textarea.style.display = "block";
+                }
+                else{
+                    textarea.style.display = "none";
+                }
+            }
+            $('.datetimepicker5').datetimepicker({
+                format: 'YYYY-MM-DD HH:mm'
+            });
+            $('.select2').select2();
+			</script>

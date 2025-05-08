@@ -1,0 +1,31 @@
+stages:
+  - deploy
+
+deploy-dev:
+  stage: deploy
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  script:
+    - ssh $USER_DEV@$IP_DEV "cd $DIR_DEV && git stash && git pull origin dev"
+  tags:
+    - peruri-ci
+  only:
+    - dev
+
+deploy-main:
+  stage: deploy
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY_PRD" | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  script:
+    - ssh $USER_PRD@$IP_PRD "cd $DIR_PRD && git stash && git pull origin main"
+  tags:
+    - peruri-ci
+  only:
+    - main
+  when: manual

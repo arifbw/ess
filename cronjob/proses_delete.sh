@@ -1,0 +1,1 @@
+php /var/www/html/ess/index.php proses_delete proses today

@@ -1,0 +1,1 @@
+php /var/www/html/ess/index.php pamlek pamlek_to_ess inisialisasi now now all

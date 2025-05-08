@@ -1,0 +1,1 @@
+cp /var/www/html/ess/outbound_sap/MasterData/*.txt /var/www/html/ess/cronjob/proses_surrounding/simbah_windows/mnt_simbah/

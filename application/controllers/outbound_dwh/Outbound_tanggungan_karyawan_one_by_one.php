@@ -1,0 +1,130 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Outbound_tanggungan_karyawan extends CI_Controller {    
+	function __construct() {
+		parent::__construct();
+		$this->load->model('outbound_dwh/M_outbound_tanggungan_karyawan');
+		$this->folder_tanggungan	= dirname($_SERVER["SCRIPT_FILENAME"])."/outbound_dwh/sikesper/dwh_hr_hcm_tanggungan_karyawan/";
+        $this->table_to_insert = 'ess_kesehatan_keluarga_tertanggung_demo';
+	}
+    
+    function get_files(){
+        try{
+            $msc = microtime(true);
+            $ignored = array('.', '..', '.svn', '.htaccess');
+            
+            $data_files = array();
+            # echo '<br>Scanning dir '.$this->folder_tanggungan.' ...<br><br>';
+            # echo 'Start : '.date('Y-m-d H:i:s').'<br>';
+            if(is_dir($this->folder_tanggungan)){
+                foreach (scandir($this->folder_tanggungan) as $file) {
+                    if (in_array($file, $ignored)) continue;
+                    $data_files = [
+                        'nama_file'=>$file,
+                        'size'=>filesize($this->folder_tanggungan.$file),
+                        'last_modified'=>date('Y-m-d H:i:s', filemtime($this->folder_tanggungan.$file)),
+                        'baris_data'=>$this->count_rows($this->folder_tanggungan.$file)
+                    ];
+                    
+                    $this->M_outbound_tanggungan_karyawan->check_name_then_insert_data($file, $data_files);
+                }
+                $msc = microtime(true)-$msc;
+                echo "Done. Execution time: $msc seconds. Files inserted to database.";
+                
+            } else{
+                echo 'Dir not found!';
+            }
+            
+        } catch(Exception $e){
+            echo 'Error Exception '.$e->getMessage();
+        }
+    }
+    
+    function count_rows($file_name){
+        $rows = explode("\n",trim(file_get_contents($file_name)));
+        return count($rows) - 1;
+    }
+    
+    function get_data() {
+        $msc = microtime(true);
+        # echo '<br>Scanning files...<br>';
+        # echo 'Start : '.date('Y-m-d H:i:s').'<br><br>';
+        
+        set_time_limit('0');
+		$ada_yang_diproses = false;
+		
+        # get files that process=0
+        $get_proses_is_nol = $this->M_outbound_tanggungan_karyawan->get_proses_is_nol()->result();
+        foreach($get_proses_is_nol as $row){
+            if(is_file($this->folder_tanggungan.$row->nama_file)){
+                $this->db->truncate($this->table_to_insert); //kosongkan tabel
+                $this->read_process($row->nama_file);
+				$ada_yang_diproses = true;
+            }
+        }
+        $msc = microtime(true)-$msc;
+        echo "Done. Execution time: $msc seconds. Inserted to database.";
+        
+		/*if($ada_yang_diproses == true) {
+			# masukan data ke tabel monitoring
+			# insert ke tabel 'ess_status_proses_input', id proses = 3
+			$this->db->insert('ess_status_proses_input', ['id_proses'=>3, 'waktu'=>date('Y-m-d H:i:s')]);
+		}*/
+    }
+    
+    function read_process($file){
+        $msc = microtime(true);
+        $handle = fopen($this->folder_tanggungan.$file, "r");
+        
+        $count = 0;
+        $count_success = 0;
+        while (($row = fgetcsv($handle,0,','))) {
+            $count++;
+            if ($count == 1) continue;
+            
+            try{
+                $array = [
+                    'personal_number' => addslashes((@$row[0]!=''?$row[0]:null)),
+                    'np_karyawan' => addslashes((@$row[1]!=''?$row[1]:null)),
+                    'nama_karyawan' => addslashes((@$row[2]!=''?$row[2]:null)),
+                    //'tempat_lahir' => addslashes((@$row[4]!=''?$row[4]:null)),
+                    //'bpjs_id' => addslashes((@$row[20]!=''?$row[20]:null)),
+                    //'class_bpjs' => addslashes((@$row[21]!=''?$row[21]:null)),
+                    //'start_date' => addslashes((@$row[22]!=''?$row[22]:null)),
+                    'tipe_keluarga' => addslashes((@$row[21]!=''?$row[21]:null)),
+                    'tempat_lahir_keluarga' => addslashes((@$row[27]!=''?$row[27]:null)),
+                    'tanggal_lahir' => addslashes((@$row[28]!=''?$row[28]:null)),
+                    //'obj_id' => addslashes((@$row[26]!=''?$row[26]:null)),
+                    'nama_lengkap' => addslashes((@$row[20]!=''?$row[20]:null)),
+                    'bpjs_id_keluarga' => addslashes((@$row[24]!=''?$row[24]:null)),
+                    //'class_bpjs_keluarga' => addslashes((@$row[29]!=''?$row[29]:null)),
+                    'updated' => date('Y-m-d H:i:s')
+                ];
+                
+                $this->db->insert($this->table_to_insert, $array);
+                if($this->db->affected_rows()>0){
+                    $count_success++;
+                }
+            } catch(Exception $e){
+                break;
+            }
+        }
+        $this->db->where('tanggal_lahir','0000-00-00')->update($this->table_to_insert, ['tanggal_lahir'=>null]);
+        $msc = microtime(true)-$msc;
+        
+        $update_file = array(
+            'proses' => 1,
+            'waktu_proses' => date('Y-m-d H:i:s'),
+            'baris_data_success' => $count_success,
+            'execution_time_second' => $msc
+        );
+        $this->M_outbound_tanggungan_karyawan->update_files($file, $update_file);
+        # echo 'Done';
+    }
+    
+	public function get_tanggungan(){
+		$this->get_files();
+		$this->get_data();
+	}
+}

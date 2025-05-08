@@ -1,0 +1,100 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class M_pajak extends CI_Model {
+
+	var $table = 'ess_pajak';
+	var $column_order = array(null, 'np_karyawan','nama_karyawan','tahun'); //set column field database for datatable_skep orderable	
+	var $order = array('created_at' => 'desc'); // default order 
+	
+	public function __construct(){
+		parent::__construct();
+		//Do your magic here
+	}
+	
+	private function _get_datatable_skeps_query($np=0,$tgl=0){
+		//dipindah kebawah karena tabel nya dinamis
+		$column_search = array('np_karyawan','nama_karyawan','tahun','file_pph'); //set column field database for datatable_skep 
+		
+		$date = date('Y-m-d');
+				
+		$this->db->select("*");
+		$this->db->from($this->table);
+		
+		if($np!='0')
+			$this->db->where("np_karyawan", $np);
+		
+		if($tgl!='0')
+			$this->db->where("created_at", $this->encrypt->decode($tgl));
+		
+		$i = 0;
+	
+		foreach ($column_search as $item) // loop column 
+		{
+			if($_POST['search']['value']) // if datatable_skep send POST for search
+			{
+				
+				if($i===0) // first loop
+				{
+					$this->db->group_start(); // open bracket. query Where with OR clause better with bracket. because maybe can combine with other WHERE with AND.
+					$this->db->like($item, $_POST['search']['value']);
+				}
+				else
+				{
+					$this->db->or_like($item, $_POST['search']['value']);
+				}
+
+				if(count($column_search) - 1 == $i) //last loop
+					$this->db->group_end(); //close bracket
+			}
+			$i++;
+		}
+		
+		if(isset($_POST['order'])) // here order processing
+		{
+			$this->db->order_by($this->column_order[$_POST['order']['0']['column']], $_POST['order']['0']['dir']);
+		} 
+		else if(isset($this->order)){
+			$order = $this->order;
+			$this->db->order_by(key($order), $order[key($order)]);
+		}
+	}
+
+	function get_datatable_skep($np=0,$tgl=0){
+		$this->_get_datatable_skeps_query($np, $tgl);
+		if($_POST['length'] != -1)
+		$this->db->limit($_POST['length'], $_POST['start']);
+		$query = $this->db->get();
+		return $query->result();
+	}
+
+	function count_filtered($np=0,$tgl=0){
+		$this->_get_datatable_skeps_query($np, $tgl);
+		$query = $this->db->get();
+		return $query->num_rows();
+	}
+
+	public function count_all($np=0,$tgl=0){		
+		$this->db->select("*");	
+		$this->db->from($this->table);
+		
+		if($np!='0')
+			$this->db->where("np_karyawan", $np);
+		
+		if($tgl!='0')
+			$this->db->where("created_at", $this->encrypt->decode($tgl));
+		
+		return $this->db->count_all_results();
+	}
+	
+	public function daftar_tgl(){
+		$this->db->select('created_at');
+		$this->db->from($this->table);
+		$this->db->group_by('created_at');
+		
+		return $this->db->get();
+	}
+}
+
+/* End of file m_skep.php */
+/* Location: ./application/models/informasi/m_skep.php */

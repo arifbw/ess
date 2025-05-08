@@ -1,0 +1,111 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Pernikahan extends CI_Controller {
+	public function __construct(){
+		parent::__construct();
+		$this->load->helper("tanggal_helper");
+	}
+
+    function excel(){
+        $this->load->library('phpexcel');
+
+        $status = $this->input->get('status');
+        $string_status = array(
+            'Menunggu Persetujuan Atasan',
+            'Disetujui Atasan',
+            'Ditolak Atasan',
+            'Verifikasi KAUN SDM',
+            'Ditolak KAUN SDM',
+            'Submit ERP',
+            'Ditolak Admin SDM',
+        );
+
+        if($status!='all'){
+            $this->db->where('approval_status',$status);
+        }
+        $this->db->where('deleted_at IS NULL');
+        $get = $this->db->get('ess_laporan_pernikahan')->result();
+
+        $excel = new PHPExcel();
+        $excel->setActiveSheetIndex(0);
+
+        $excel->setActiveSheetIndex(0)->mergeCells('A1:Q1');
+        $excel->getActiveSheet()->setCellValueExplicit('A1', "Verifikasi Laporan Pernikahan", PHPExcel_Cell_DataType::TYPE_STRING);
+        $excel->getActiveSheet()->getStyle('A1:Q1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $excel->setActiveSheetIndex(0)->getStyle('A1')->getFont()->setBold(true);
+
+        $judul = array(
+            'No',
+            'Pegawai',
+            'Unit Kerja',
+            'Nama Pasangan',
+            'Tempat Lahir Pasangan',
+            'Tanggal Lahir Pasangan',
+            'Agama Pasangan',
+            'Pekerjaan Pasangan',
+            'Alamat Pasangan',
+            'Hari Pernikahan',
+            'Tanggal Pernikahan',
+            'Tempat Pernikahan',
+            'No Surat Keterangan Nikah',
+            'No KTP',
+            'Keterangan',
+            'Dibuat Tanggal',
+            'Status'
+        );
+        $alphabet = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q');
+        foreach ($alphabet as $key => $value) {
+            $excel->setActiveSheetIndex(0)->setCellValue($value.'3', $judul[$key]);
+        }
+        $excel->setActiveSheetIndex(0)->getStyle('A3:Q3')->getFont()->setBold(true);
+
+        $awal = 4;
+        $no = 1;
+
+        foreach($get as $row){
+            $excel->getActiveSheet()->setCellValue('A'.$awal, $no);
+            $excel->getActiveSheet()->setCellValueExplicit('B'.$awal, $row->np_karyawan.' - '.$row->nama_karyawan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('C'.$awal, $row->nama_unit, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('D'.$awal, $row->nama_pasangan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('E'.$awal, $row->tempat_lahir_pasangan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('F'.$awal, tanggal_indonesia($row->tanggal_lahir_pasangan), PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('G'.$awal, $row->agama_pasangan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('H'.$awal, $row->pekerjaan_pasangan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('I'.$awal, $row->alamat_pasangan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('J'.$awal, $row->hari_pernikahan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('K'.$awal, tanggal_indonesia($row->tanggal_pernikahan), PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('L'.$awal, $row->tempat_pernikahan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('M'.$awal, $row->no_surat_keterangan_nikah, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('N'.$awal, $row->no_ktp, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('O'.$awal, $row->keterangan, PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('P'.$awal, datetime_indo($row->created_at), PHPExcel_Cell_DataType::TYPE_STRING);
+            $excel->getActiveSheet()->setCellValueExplicit('Q'.$awal, $string_status[$row->approval_status], PHPExcel_Cell_DataType::TYPE_STRING);
+
+            $no++;
+            $awal++;
+        }
+        $awal--;
+
+        $excel->setActiveSheetIndex(0)->getStyle('A3:Q'.$awal)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);        
+        foreach ($alphabet as $key => $value) {
+            $excel->setActiveSheetIndex(0)->getColumnDimension($value)->setAutoSize(true);
+        }
+
+        $objWriter = PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
+        $objWriter->setIncludeCharts(TRUE);
+        $objWriter->setPreCalculateFormulas(TRUE);
+        PHPExcel_Calculation::getInstance($excel)->clearCalculationCache();
+
+        ob_start();
+        $objWriter->save('php://output');
+        $xlsData = ob_get_contents();
+        ob_end_clean();
+
+        $response =  array(
+            'status' => TRUE,
+            'file' => "data:application/vnd.ms-excel;base64,".base64_encode($xlsData),
+            'name' => "Data Verifikasi Pelaporan Pernikahan"
+        );
+        echo json_encode($response);
+    }
+}

@@ -1,0 +1,1 @@
+cp /var/www/html/ess/outbound_sap/MasterData/*.txt /var/www/html/ess/cronjob/proses_surrounding/webcovid_windows/mnt_webcovid/
